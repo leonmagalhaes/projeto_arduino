@@ -25,3 +25,7 @@ docker-compose up --build
 ```bash
 http://127.0.0.1:5000
 ```
+
+```bash
+docker-compose down
+```
