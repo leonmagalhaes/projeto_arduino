@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Produtos</title>
+</head>
+<body>
+    <h1>Sistema de Produtos</h1>
+    <p id="mensagem">Use um leitor ou clique para verificar produtos.</p>
+
+    <!-- Formulário para adicionar um produto manualmente -->
+    <form id="adicionarProdutoForm">
+        <label for="produtoId">ID do Produto:</label>
+        <input type="text" id="produtoId" name="produtoId" required>
+        <label for="produtoNome">Nome do Produto:</label>
+        <input type="text" id="produtoNome" name="produtoNome" required>
+        <button type="submit">Adicionar Produto</button>
+    </form>
+
+    <script>
+        const form = document.getElementById('adicionarProdutoForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('produtoId').value;
+            const nome = document.getElementById('produtoNome').value;
+
+            const response = await fetch('/produto', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, nome })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert(result.message);
+            } else {
+                alert(result.error);
+            }
+        });
+    </script>
+</body>
+</html>

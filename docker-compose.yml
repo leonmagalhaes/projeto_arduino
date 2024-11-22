@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  flask-backend:
+    build:
+      context: .
+    container_name: flask-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./produtos.db:/app/produtos.db  # Persistência do banco SQLite
