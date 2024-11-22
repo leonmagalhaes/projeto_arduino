@@ -34,6 +34,21 @@ def buscar_produto(id):
         return jsonify({'id': produto[0], 'nome': produto[1]})
     else:
         return jsonify({'error': 'Produto não encontrado'}), 404
+    
+@app.route('/produtos', methods=['GET'])
+def listar_produtos():
+    conn = sqlite3.connect('/app/produtos.db')  # Certifique-se de ajustar o caminho do banco
+    cursor = conn.cursor()
+
+    # Recupera todos os produtos do banco
+    cursor.execute('SELECT * FROM produtos')
+    produtos = cursor.fetchall()
+    conn.close()
+
+    # Transforma os dados em uma lista de dicionários
+    resultado = [{'id': produto[0], 'nome': produto[1]} for produto in produtos]
+
+    return jsonify(resultado)
 
 # Endpoint para adicionar um produto
 @app.route('/produto', methods=['POST'])
