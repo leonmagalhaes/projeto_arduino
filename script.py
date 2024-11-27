@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 # Configuração inicial do banco de dados
 def init_db():
-    conn = sqlite3.connect('/app/produtos.db')
+    conn = sqlite3.connect('produtos.db')
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS produtos (
@@ -34,42 +34,45 @@ def buscar_produto(id):
         return jsonify({'id': produto[0], 'nome': produto[1]})
     else:
         return jsonify({'error': 'Produto não encontrado'}), 404
-    
+
+# Endpoint para adicionar um produto via POST
+@app.route('/produto', methods=['POST'])
+def adicionar_produto():
+    try:
+        # Força o Flask a processar o corpo como JSON
+        data = request.get_json(force=True)
+    except Exception as e:
+        return jsonify({"error": f"Erro ao processar JSON: {str(e)}"}), 400
+
+    id_produto = data.get('id')
+    nome_produto = data.get('nome')
+
+    if not id_produto or not nome_produto:
+        return jsonify({"error": "ID e Nome do produto são obrigatórios"}), 400
+
+    conn = sqlite3.connect('produtos.db')
+    cursor = conn.cursor()
+    try:
+        cursor.execute('INSERT INTO produtos (id, nome) VALUES (?, ?)', (id_produto, nome_produto))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        return jsonify({"error": "Produto com este ID já existe"}), 400
+    finally:
+        conn.close()
+
+    return jsonify({"message": "Produto adicionado com sucesso!"})
+
+# Endpoint para listar todos os produtos
 @app.route('/produtos', methods=['GET'])
 def listar_produtos():
-    conn = sqlite3.connect('/app/produtos.db')  # Certifique-se de ajustar o caminho do banco
+    conn = sqlite3.connect('produtos.db')
     cursor = conn.cursor()
-
-    # Recupera todos os produtos do banco
     cursor.execute('SELECT * FROM produtos')
     produtos = cursor.fetchall()
     conn.close()
 
-    # Transforma os dados em uma lista de dicionários
     resultado = [{'id': produto[0], 'nome': produto[1]} for produto in produtos]
-
     return jsonify(resultado)
-
-# Endpoint para adicionar um produto
-@app.route('/produto', methods=['POST'])
-def adicionar_produto():
-    data = request.get_json()
-
-    if 'id' not in data or 'nome' not in data:
-        return jsonify({'error': 'ID e nome do produto são obrigatórios'}), 400
-
-    conn = sqlite3.connect('produtos.db')
-    cursor = conn.cursor()
-
-    try:
-        cursor.execute('INSERT INTO produtos (id, nome) VALUES (?, ?)', (data['id'], data['nome']))
-        conn.commit()
-    except sqlite3.IntegrityError:
-        return jsonify({'error': 'Produto com este ID já existe'}), 400
-    finally:
-        conn.close()
-
-    return jsonify({'message': 'Produto adicionado com sucesso!'})
 
 if __name__ == '__main__':
     init_db()  # Inicializa o banco de dados

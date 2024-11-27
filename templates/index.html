@@ -7,25 +7,65 @@
 </head>
 <body>
     <h1>Sistema de Produtos</h1>
-    <p id="mensagem">Use um leitor ou clique para verificar produtos.</p>
+    <p id="mensagem">Aguardando leitura do código de barras...</p>
 
-    <!-- Formulário para adicionar um produto manualmente -->
-    <form id="adicionarProdutoForm">
-        <label for="produtoId">ID do Produto:</label>
-        <input type="text" id="produtoId" name="produtoId" required>
-        <label for="produtoNome">Nome do Produto:</label>
-        <input type="text" id="produtoNome" name="produtoNome" required>
-        <button type="submit">Adicionar Produto</button>
-    </form>
+    <!-- Exibir detalhes do produto -->
+    <div id="produtoDetalhes" style="display: none;">
+        <h2>Produto Encontrado</h2>
+        <p><strong>ID:</strong> <span id="produtoIdDetalhe"></span></p>
+        <p><strong>Nome:</strong> <span id="produtoNomeDetalhe"></span></p>
+    </div>
+
+    <!-- Formulário para adicionar um produto interativamente -->
+    <div id="produtoNaoEncontrado" style="display: none;">
+        <h2>Produto Não Encontrado</h2>
+        <p><strong>ID do Produto:</strong> <span id="produtoIdNaoEncontrado"></span></p>
+        <form id="adicionarProdutoForm">
+            <label for="produtoNome">Digite o Nome do Produto:</label>
+            <input type="text" id="produtoNome" name="produtoNome" required>
+            <button type="submit">Adicionar Produto</button>
+        </form>
+    </div>
 
     <script>
+        // Simulação de leitura de código de barras
+        async function processarCodigoBarras(codigo) {
+            const response = await fetch(`/produto/${codigo}`);
+            if (response.ok) {
+                const produto = await response.json();
+                document.getElementById('mensagem').textContent = 'Produto encontrado!';
+                document.getElementById('produtoDetalhes').style.display = 'block';
+                document.getElementById('produtoNaoEncontrado').style.display = 'none';
+                document.getElementById('produtoIdDetalhe').textContent = produto.id;
+                document.getElementById('produtoNomeDetalhe').textContent = produto.nome;
+            } else if (response.status === 404) {
+                document.getElementById('mensagem').textContent = 'Produto não encontrado!';
+                document.getElementById('produtoDetalhes').style.display = 'none';
+                document.getElementById('produtoNaoEncontrado').style.display = 'block';
+                document.getElementById('produtoIdNaoEncontrado').textContent = codigo;
+            } else {
+                document.getElementById('mensagem').textContent = 'Erro ao buscar o produto.';
+            }
+        }
+
+        // Simulando integração com leitor de código de barras
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {  // Supondo que Enter finalize a leitura
+                const codigo = document.getElementById('mensagem').textContent.trim();
+                processarCodigoBarras(codigo);
+            } else {
+                document.getElementById('mensagem').textContent += e.key;
+            }
+        });
+
+        // Adicionar produto quando não encontrado
         const form = document.getElementById('adicionarProdutoForm');
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const id = document.getElementById('produtoId').value;
+            const id = document.getElementById('produtoIdNaoEncontrado').textContent;
             const nome = document.getElementById('produtoNome').value;
 
-            const response = await fetch('/produto', {
+            const response = await fetch('/produto_interativo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id, nome })
@@ -34,6 +74,8 @@
             const result = await response.json();
             if (response.ok) {
                 alert(result.message);
+                document.getElementById('mensagem').textContent = 'Produto adicionado com sucesso!';
+                document.getElementById('produtoNaoEncontrado').style.display = 'none';
             } else {
                 alert(result.error);
             }
