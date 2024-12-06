@@ -9,11 +9,11 @@ USB Usb;
 HIDUniversal Hid(&Usb);
 
 // Configuração WiFi
-const char* ssid = "2001";       // Substitua pelo nome da sua rede WiFi
-const char* password = "M100200300";   // Substitua pela senha da sua rede WiFi
+const char* ssid = "";       // Substitua pelo nome da sua rede WiFi
+const char* password = "";   // Substitua pela senha da sua rede WiFi
 
 // Configuração do servidor
-const char* server = "192.168.15.7";  // Substitua pelo IP do servidor Flask
+const char* server = "";  // Substitua pelo IP do servidor Flask
 const int port = 5000;               // Porta do backend Flask
 
 WiFiClient wifiClient;
